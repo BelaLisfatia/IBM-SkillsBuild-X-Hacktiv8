@@ -26,5 +26,8 @@ After the time is up, the results are displayed, including WPM, accuracy, number
 4. Start type
 
 # AI support explanation
+- AI IBM Granite (model="ibm-granite/granite-3.3-8b-instruct")
 ![AI IBM Granite (model="ibm-granite/granite-3.3-8b-instruct")](AI_IBM_Granite.png)
-![Develop use OpenAI ChatGPT](OpenAI_ChatGPT.png)
+
+- Develop code use OpenAI ChatGPT
+![Develop code use OpenAI ChatGPT](OpenAI_ChatGPT.png)
