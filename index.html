@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"/>
+  <title>Typing Speed Test</title>
+  <style>
+    :root{
+      --bg:#eaf1fc;
+      --card:#ffffff;
+      --soft:#eef3fb;
+      --chip:#edf6ff;
+      --chip-active:#cfe8ff;
+      --good:#22c55e;
+      --bad:#ef4444;
+      --brand:#3b82f6;
+      --text:#1f2937;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+      color:var(--text);
+    }
+    .card{
+      width:100%;
+      max-width:980px;
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(2,6,23,.12);
+      padding:16px;
+    }
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:space-between;
+    }
+    .left, .right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    label{font-size:12px; opacity:.8}
+    select{
+      padding:8px 10px;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      background:#fff;
+      font-size:14px;
+    }
+
+    .words-wrap{
+      background:var(--soft);
+      border-radius:12px;
+      padding:12px;
+      margin:16px 0;
+      min-height:72px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:flex-start;
+    }
+    .word{
+      padding:6px 10px;
+      border-radius:10px;
+      background:#fff;
+      box-shadow:0 1px 0 rgba(2,6,23,.06);
+      transition:.15s;
+      font-size:15px;
+    }
+    .word.current{ background:var(--chip-active); font-weight:600; }
+    .word.correct{ color:var(--good); font-weight:700; background:#e9fbeF; }
+    .word.incorrect{ color:var(--bad); font-weight:700; background:#ffecec; }
+
+    .controls{ display:flex; flex-wrap:wrap; gap:10px; }
+    .input{
+      flex:1;
+      padding:12px 14px;
+      border:2px solid #e5e7eb;
+      border-radius:10px;
+      font-size:16px;
+      outline:none;
+      background:#f8fafc;
+      min-width:140px;
+    }
+    .input:focus{ border-color: var(--brand); background:#fff; }
+    .timer{
+      background:#16a34a;
+      color:#fff;
+      font-weight:700;
+      padding:10px 14px;
+      border-radius:10px;
+      min-width:72px;
+      text-align:center;
+      flex-shrink:0;
+    }
+    .btn{
+      border:none;
+      background:var(--brand);
+      color:#fff;
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      flex-shrink:0;
+    }
+
+    .results{
+      margin-top:18px;
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 1px 0 rgba(2,6,23,.06);
+      display:none;
+    }
+    .results-header{
+      background:#3f71d8;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 16px;
+      font-weight:800;
+      letter-spacing:.5px;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .results table{ width:100%; border-collapse:collapse; background:#fff; }
+    .results td{
+      border-top:1px solid #e5e7eb;
+      padding:10px 12px;
+      font-size:14px;
+    }
+    .results td:last-child{ text-align:right; font-weight:700; }
+
+    /* --- Responsif HP --- */
+    @media (max-width:600px){
+      .word{ font-size:14px; padding:4px 8px; }
+      .input{ font-size:14px; padding:10px; }
+      .timer, .btn{ padding:8px 10px; font-size:14px; }
+      .results-header{ font-size:14px; }
+      #wpmBanner{ font-size:22px !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="row">
+      <div class="left">
+        <div>
+          <div style="font-size:12px;opacity:.8">Bahasa</div>
+          <div style="font-weight:700">Pilih bahasa</div>
+        </div>
+        <select id="lang">
+          <option value="id">Indonesian</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+
+    <section class="words-wrap" id="words"></section>
+
+    <div class="controls">
+      <input id="input" class="input"
+             placeholder="Ketik di sini lalu tekan spasi…"
+             autocomplete="off" />
+      <div id="timer" class="timer">1:00</div>
+      <button id="reset" class="btn" title="Mulai ulang">⟳</button>
+    </div>
+
+    <section id="results" class="results">
+      <div class="results-header">
+        <div>HASIL</div>
+        <div id="wpmBanner" style="font-size:28px;">0 WPM</div>
+      </div>
+      <table>
+        <tr><td>Ketepatan</td><td id="accCell">0%</td></tr>
+        <tr><td>Kata benar</td><td id="okCell">0</td></tr>
+        <tr><td>Kata salah</td><td id="badCell">0</td></tr>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const SENTENCES = {
+      id: [
+        "jelas salah bisa mana sesuatu orang memang telah malam kurang cukup dapat khusus ke saat juga kepada",
+        "anak kecil bermain bola di halaman rumah pada sore hari",
+        "orang mengira ketika ingin mengubah hidup maka harus memikirkan hal-hal yang besar padahal perubahan kecil tapi nyata lebih berpengaruh terhadap hidup anda",
+        "kemarin hujan deras membuat jalan menjadi licin dan macet",
+        "setelah menyelesaikan serangkaian latihan, aku akan mencatatnya dalam buku harian olahraga yang aku miliki",
+        "orang tua itu tersenyum ramah ketika menolong tetangganya",
+        "kita perlu belajar dengan tekun agar mencapai cita cita"
+      ],
+      en: [
+        "clear wrong can where something people indeed already night less enough able special to time also towards",
+        "the little child played ball in the yard in the afternoon",
+        "These problems won't be solved by chance, but by choices",
+        "He clambered to the lamp, his hands trembling as he adjusted the beam, guiding the lost vessel toward safety.",
+        "heavy rain yesterday made the road slippery and crowded",
+        "As the first rays of dawn broke through the clouds, he saw the ship safely past the rocks, a silent testament to his unwavering dedication.",
+        "the old man smiled kindly when helping his neighbor",
+        "we need to study diligently to achieve our dreams"
+      ]
+    };
+
+    const wordsBox = document.getElementById("words");
+    const input = document.getElementById("input");
+    const timerEl = document.getElementById("timer");
+    const resetBtn = document.getElementById("reset");
+    const langSel = document.getElementById("lang");
+
+    const results = document.getElementById("results");
+    const wpmBanner = document.getElementById("wpmBanner");
+    const accCell = document.getElementById("accCell");
+    const okCell = document.getElementById("okCell");
+    const badCell = document.getElementById("badCell");
+
+    let lang = "id";
+    let words = [];
+    let idx = 0;
+
+    let started = false;
+    let secs = 60;
+    let tick = null;
+    let startTime = 0;
+
+    let correctWords = 0;
+    let wrongWords = 0;
+    let typedChars = 0;
+    let correctChars = 0;
+
+    function pickSentence() {
+      const arr = SENTENCES[lang];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function renderSentence(sentence) {
+      wordsBox.innerHTML = "";
+      words = sentence.trim().split(/\s+/);
+      idx = 0;
+      for (let i = 0; i < words.length; i++) {
+        const span = document.createElement("span");
+        span.className = "word";
+        span.textContent = words[i];
+        if (i === 0) span.classList.add("current");
+        wordsBox.appendChild(span);
+      }
+    }
+
+    function toMMSS(s) {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${sec < 10 ? "0" : ""}${sec}`;
+    }
+
+    function startTimerOnFirstKey(e) {
+      if (!started && e.key.length === 1) {
+        started = true;
+        startTime = Date.now();
+        tick = setInterval(() => {
+          secs--;
+          timerEl.textContent = toMMSS(secs);
+          if (secs <= 0) finish();
+        }, 1000);
+      }
+    }
+
+    function nextWordOrNextSentence() {
+      idx++;
+      if (idx >= words.length) {
+        renderSentence(pickSentence());
+      } else {
+        const chips = [...wordsBox.children];
+        chips.forEach((c) => c.classList.remove("current"));
+        wordsBox.children[idx].classList.add("current");
+      }
+    }
+
+    function resetAll() {
+      clearInterval(tick);
+      secs = 60;
+      timerEl.textContent = "1:00";
+      tick = null;
+      started = false;
+
+      correctWords = 0;
+      wrongWords = 0;
+      correctChars = 0;
+      typedChars = 0;
+
+      results.style.display = "none";
+      input.disabled = false;
+      input.value = "";
+      input.focus();
+
+      renderSentence(pickSentence());
+    }
+
+    function finish() {
+      clearInterval(tick);
+      input.disabled = true;
+      const elapsedMin = Math.max((Date.now() - startTime) / 60000, 1/60);
+      const wpm = Math.round(correctWords / elapsedMin);
+      const acc = typedChars > 0 ? Math.round((correctChars / typedChars) * 100) : 0;
+
+      wpmBanner.textContent = `${wpm} WPM`;
+      accCell.textContent = `${acc}%`;
+      okCell.textContent = `${correctWords}`;
+      badCell.textContent = `${wrongWords}`;
+      results.style.display = "block";
+    }
+
+    input.addEventListener("keydown", startTimerOnFirstKey);
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key !== " ") return;
+      e.preventDefault();
+
+      const typed = input.value.trim();
+      if (!typed) return;
+
+      const chips = [...wordsBox.children];
+      const target = chips[idx];
+      const expected = target.textContent;
+
+      typedChars += typed.length;
+      const matchChars = Math.min(typed.length, expected.length);
+      for (let i = 0; i < matchChars; i++) {
+        if (typed[i] === expected[i]) correctChars++;
+      }
+
+      if (typed === expected) {
+        target.classList.add("correct");
+        correctWords++;
+      } else {
+        target.classList.add("incorrect");
+        wrongWords++;
+      }
+      target.classList.remove("current");
+
+      input.value = "";
+      nextWordOrNextSentence();
+    });
+
+    resetBtn.addEventListener("click", resetAll);
+
+    langSel.addEventListener("change", (e) => {
+      lang = e.target.value;
+      resetAll();
+    });
+
+    resetAll();
+  </script>
+</body>
+</html>
+
+
