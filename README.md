@@ -26,8 +26,16 @@ After the time is up, the results are displayed, including WPM, accuracy, number
 4. Start type
 
 # AI support explanation
-- AI IBM Granite (model="ibm-granite/granite-3.3-8b-instruct")
+AI IBM Granite (model="ibm-granite/granite-3.3-8b-instruct")
+- Granite, as an AI assistant, is tasked with writing automated programs.
+- With a zero-shot prompting approach, users do not need to provide code examples—just a description of the features and UI.
+- LangChain + Replicate → used as a wrapper to communicate with Granite.
+- Result: AI automatically generates the HTML+CSS+JS for a complete Typing Speed Test application, according to specifications.
+  
 ![AI IBM Granite (model="ibm-granite/granite-3.3-8b-instruct")](AI_IBM_Granite.png)
 
-- Develop code use OpenAI ChatGPT
+Develop code use OpenAI ChatGPT
+- Improving the initial structure of HTML, CSS, and JavaScript
+- Optimizing functions such as timers, result calculations, and responsive displays
+
 ![Develop code use OpenAI ChatGPT](OpenAI_ChatGPT.png)
