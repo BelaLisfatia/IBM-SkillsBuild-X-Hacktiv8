@@ -1,5 +1,5 @@
 # Typing Speed Test
-https://app.netlify.com/projects/lets-type1/ 
+https://lets-type1.netlify.app/
 
 # Description
 Typing Speed Test is a web-based application for measuring typing speed (WPM — Words Per Minute) and user accuracy.
